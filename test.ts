@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.189.0/testing/asserts.ts";
 import fc from "npm:fast-check@3.9.0";
-import { URLPathname } from "./URLPathname.ts";
+import { URLPathname } from "./URLPathname.js";
 
 Deno.test("URLPathname can be created from a list of path parts", () => {
 	const pathname = new URLPathname("test", "pathname");
@@ -164,3 +164,19 @@ Deno.test(
 		);
 	},
 );
+
+Deno.test("Works with URL API constructor", () => {
+	const id = 123;
+	// @ts-expect-error TS doesn't know that URL will call .toString() implicitly
+	const url = new URL(new URLPathname("/posts/", id), "https://example.com");
+	assertEquals(url.href, "https://example.com/posts/123");
+});
+
+Deno.test("Works with URL API pathname property", () => {
+	const id = 123;
+
+	const url = new URL("https://example.com");
+	url.pathname = new URLPathname("/posts/", id).toString();
+
+	assertEquals(url.href, "https://example.com/posts/123");
+});
